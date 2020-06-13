@@ -28,6 +28,6 @@ int		main(int ac, char **av)
 	N *c = a;  // esp+0x14
 	N *d = b;  // esp+0x10
 
-	c->setAnnotation(av[0]);
+	c->setAnnotation(av[1]);
 	return (*d + *c);
 }
