@@ -4,16 +4,16 @@
 int language = 0;
 
 int		greetuser(char *name) {
-	char *str;
+	char str[72];  // ebp-0x48 == esp+0x10
 	switch (language) {
 		case 0:
-			str = "Hello ";
+			strcpy(str, "Hello ");
 			break;
 		case 1:
-			str = "Hyvää päivää ";
+			strcpy(str, "Hyvää päivää ");
 			break;
 		case 2:
-			str = "Goedemiddag! ";
+			strcpy(str, "Goedemiddag! ");
 			break;
 		default:
 			break;
@@ -23,25 +23,30 @@ int		greetuser(char *name) {
 }
 
 int		main(int ac, char **av) {
-	char s1[76];  // esp+0x50
-	char *s2;  // esp+0x9c
+	char str[76];  // esp+0x50
+	char str2[80];  // esp
+	char *lang;  // esp+0x9c
 
 	if (ac != 3)
 		return 1;
 
-	memset(s1, '\0', 19);  // 0x13
+	memset(str, '\0', 19);  // 0x13
 
-	stpncpy(s1, av[1], 40);  // 0x28
-	strncpy(s1 + 40, av[2], 32);  // x020
-	s2 = getenv("LANG");
-	if (*s2) {
-		if (!memcmp(s2, "fi", 2)) {
+	stpncpy(str, av[1], 40);  // 0x28
+	strncpy(str + 40, av[2], 32);  // x020
+	lang = getenv("LANG");
+	if (*lang) {
+		if (!memcmp(lang, "fi", 2)) {
 			language = 1;
 		} else {
-			if (!memcmp(s2, "nl",2)) {
+			if (!memcmp(lang, "nl",2)) {
 				language = 2;
 			}
 		}
 	}
-	return greetuser(s1);
+	for (int i = 0; i < 19; i++) {
+		str2[i] = str[i];
+	}
+
+	return greetuser(str2);
 }
