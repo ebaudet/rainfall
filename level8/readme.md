@@ -4,7 +4,7 @@ pass : `5684af5cb4c8679958be4abe6373147ab52d95768e047820bf382e44fa8d8fb9`
 
 ## Sources :
 
-```c=
+```c
 #include <stdio.h>
 
 char	*auth = NULL;  // 0x08049aac
@@ -86,7 +86,7 @@ Enfin, un coup de login et on est bon.
 
 ## Exploit
 
-```shell=
+```shell
 level8@RainFall:~$ ./level8
 (nil), (nil)
 auth test

