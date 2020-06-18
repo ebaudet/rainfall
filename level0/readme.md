@@ -2,15 +2,33 @@
 
 pass : `level0`
 
-```bash
-level0@RainFall:~$ ls -la
-total 737
-dr-xr-x---+ 1 level0 level0     60 Mar  6  2016 .
-dr-x--x--x  1 root   root      340 Sep 23  2015 ..
--rw-r--r--  1 level0 level0    220 Apr  3  2012 .bash_logout
--rw-r--r--  1 level0 level0   3530 Sep 23  2015 .bashrc
--rw-r--r--  1 level0 level0    675 Apr  3  2012 .profile
--rwsr-x---+ 1 level1 users  747441 Mar  6  2016 level0
+## Source :
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+int main(int ac, char **av) {
+  char *string;  // esp+0x10
+  int nb;  // esp+0x14
+  int uid;  // esp+0x18
+  int gid;  // esp+0x1c
+  
+  if (atoi(av[0]) == 423) {
+    string = strdup("/bin/sh");
+    nb = 0;
+    gid = getegid();
+    uid = geteuid();
+    setresgid(gid, gid, gid);
+    setresuid(uid, uid, uid);
+    execv("/bin/sh", string);
+  } else {
+    fwrite("No !\n", 1, 5, stderr);
+  }
+  return 0;
+}
 ```
 
 ## Recherche :
@@ -37,20 +55,20 @@ Program received signal SIGSEGV, Segmentation fault.
 (gdb)
 ```
 
-Le programme plante à atoi, quand on a pas d'argument.
+Le programme plante à atoi, quand on n'a pas d'argument.
 
 ```nasm
 (gdb) disas main
 Dump of assembler code for function main:
    0x08048ec0 <+0>:	push   %ebp
    0x08048ec1 <+1>:	mov    %esp,%ebp
-=> 0x08048ec3 <+3>:	and    $0xfffffff0,%esp
+   0x08048ec3 <+3>:	and    $0xfffffff0,%esp
    0x08048ec6 <+6>:	sub    $0x20,%esp
    0x08048ec9 <+9>:	mov    0xc(%ebp),%eax
    0x08048ecc <+12>:	add    $0x4,%eax
    0x08048ecf <+15>:	mov    (%eax),%eax
    0x08048ed1 <+17>:	mov    %eax,(%esp)
-   0x08048ed4 <+20>:	call   0x8049710 <atoi> ; call atoi
+=> 0x08048ed4 <+20>:	call   0x8049710 <atoi> ; call atoi
    0x08048ed9 <+25>:	cmp    $0x1a7,%eax      ; compare result à 0x1a7 (423)
    0x08048ede <+30>:	jne    0x8048f58 <main+152>
    0x08048ee0 <+32>:	movl   $0x80c5348,(%esp)
