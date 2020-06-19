@@ -1,10 +1,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-int language = 0;
+int language = 0;  // 0x08049988
 
-int		greetuser(char *name) {
+int		greetuser(char *name) {  // 0x08048484
 	char str[72];  // ebp-0x48 == esp+0x10
+
 	switch (language) {
 		case 0:
 			strcpy(str, "Hello ");
@@ -22,7 +23,7 @@ int		greetuser(char *name) {
 	return (puts(str));
 }
 
-int		main(int ac, char **av) {
+int		main(int ac, char **av) {  // 0x08048529
 	char str[76];  // esp+0x50
 	char str2[80];  // esp
 	char *lang;  // esp+0x9c

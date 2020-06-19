@@ -1,21 +1,20 @@
 #include <stdio.h>
 
-// 0x080484a4
-void	o() {
+int m = 0;  // 0x08049854
+
+void	o() {  // 0x080484a4
 	system("/bin/sh");
 	_exit(1);
 }
 
-// 0x080484c2
-void	n() {
-	// char *fgets(char *s, int size, FILE *stream);
-	char	str[520];  // 0x208
-	fgets(str, 512, stdin);  // 0x200
-	printf(str);
+void	n() {  // 0x080484c2
+	char	buf[520];  // ebp-0x208 | esp+0x10
+
+	fgets(buf, 512, stdin);  // 0x200
+	printf(buf);
 	exit(1);
 }
 
-// 0x08048504
-void	main() {
+void	main() {  // 0x08048504
 	n();
 }

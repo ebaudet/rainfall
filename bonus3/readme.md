@@ -2,7 +2,7 @@
 
 pass : `71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587`
 
-## Sources :
+## Source :
 
 ```c
 #include <stdio.h>
@@ -10,7 +10,7 @@ pass : `71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587`
 #include <string.h>
 #include <unistd.h>
 
-int		main(int ac, char **av) {
+int		main(int ac, char **av) {  // 0x080484f4
 	FILE	*file;  // exp+0x9c
 	char	str[65];  // esp+0x18
 	int		nb;  // esp+0x59
@@ -45,7 +45,7 @@ Pour que `str` soit nulle, il suffit que lorsqu'on fait `str[atoi(av[1])] = 0;` 
 
 `atoi("0") == 0`, mais aussi `atoi("") == 0`
 
-Comme on attend forcément un argument au lieu d'appeler `./bonus2`, on va faire `./bonus3 ""`
+Comme on attend forcément un argument au lieu d'appeler `./bonus3`, on va faire `./bonus3 ""`
 
 ## Exploit :
 

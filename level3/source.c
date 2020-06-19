@@ -3,7 +3,7 @@
 
 int	m = 0;  // 0x804988c
 
-void		v() {  // 0x080484a4
+int		v() {  // 0x080484a4
 	char str[520];  // ebp-0x208 | esp+0x10 / size : 0x208
 
 	fgets(str, 512, stdin);  // 0x200
@@ -12,8 +12,9 @@ void		v() {  // 0x080484a4
 		fwrite("Wait what?!\n", 1, 12, stdout);
 		system("/bin/sh");
 	}
+	return m;
 }
 
-void		main(int ac, char **av, char **envp) {  // 0x0804851a
-	v();
+int		main(int ac, char **av, char **envp) {  // 0x0804851a
+	return v();
 }

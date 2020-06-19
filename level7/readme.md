@@ -2,7 +2,7 @@
 
 pass : `f73dcb7a06f60e3ccc608990b0a046359d42a1a0489ffeefd0d9cb2d7c9cb82d`
 
-## Sources :
+## Source :
 
 ```c
 #include <stdlib.h>
@@ -17,9 +17,9 @@ void	m() {  // 0x080484f4
 }
 
 int		main(int ac, char **av) {  // 0x08048521
-  char **b;  // esp+0x18
+	char **b;  // esp+0x18
 	char **a;  // esp+0x1c
-  
+
 	a = malloc(2 * sizeof(char *));
 	a[0] = 1;
 	a[1] = malloc(8);
@@ -69,7 +69,7 @@ End of assembler dump.
 On le remplacera par :
 
 - `b[1]` = `0x08049928` (`puts`)
-- `av[2]` = `0x080484f4` (`m`) 
+- `av[2]` = `0x080484f4` (`m`)
 
 
 

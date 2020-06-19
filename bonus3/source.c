@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int		main(int ac, char **av) {
+int		main(int ac, char **av) {  // 0x080484f4
 	FILE	*file;  // exp+0x9c
 	char	str[65];  // esp+0x18
 	int		nb;  // esp+0x59

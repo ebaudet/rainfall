@@ -18,8 +18,7 @@ public :
 	}
 };
 
-int		main(int ac, char **av)
-{
+int		main(int ac, char **av) {  // 0x080485f4
 	if (ac <= 1)
 		_exit(1);
 	N *a = new N(5);  // esp+0x1c

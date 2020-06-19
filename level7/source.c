@@ -3,37 +3,28 @@
 #include <stdio.h>
 #include <time.h>
 
-char c[80];  // 0x00000050
+char c[80];  // 0x08049960 / size : 0x50
 
-void	m() {
-	// time_t time(time_t *tloc);
-	time_t duration = time(0);
-
-	printf("%s - %d", c, duration);
+void	m() {  // 0x080484f4
+	printf("%s - %d", c, time(0));
 }
 
-int		main(int ac, char **av) {
-	// void *malloc(size_t size);
+int		main(int ac, char **av) {  // 0x08048521
+	char **b;  // esp+0x18
 	char **a;  // esp+0x1c
+
 	a = malloc(2 * sizeof(char *));
 	a[0] = 1;
 	a[1] = malloc(8);
 
-	char **b;  // esp+0x18
 	b = malloc(2 * sizeof(char *));
 	b[0] = 2;
 	b[1] = malloc(8);
 
-	// char *strcpy(char *dest, const char *src);
 	strcpy(a[1], av[1]);
 	strcpy(b[1], av[2]);
 
-	// FILE *fopen(const char *pathname, const char *mode);
-	FILE *file;
-	file = fopen("/home/user/level8/.pass", "r");
-
-	// char *fgets(char *s, int size, FILE *stream);
-	fgets(c, 68, file);  // 0x44
+	fgets(c, 68, fopen("/home/user/level8/.pass", "r"));  // 0x44
 
 	// 0x8048703 on .rodata segment
 	puts("~~");

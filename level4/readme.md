@@ -16,10 +16,10 @@ void	p(char *str) {  // 0x08048444
 void	n() {  // 0x08048457
 	char buf[520];  // ebp-0x208 | esp+0x10
 
-	fgets(buf, 512, stdin);  // 0x200 
+	fgets(buf, 512, stdin);  // 0x200
 	p(buf);
 	if (m == 0x1025544) {
-    system("/bin/cat /home/user/level5/.pass");
+	system("/bin/cat /home/user/level5/.pass");
 	}
 }
 
@@ -60,7 +60,7 @@ Cette fois on veut :
 - l'offset pour y écrire est `12`
 - la valeur que l'on veut mettre est `0x1025544`
 
-Dans l'execice précédent, on pouvait écrire les `0x40` caractères, mais maintenant c'est beaucoup plus. On va donc utiliser 
+Dans l'execice précédent, on pouvait écrire les `0x40` caractères, mais maintenant c'est beaucoup plus. On va donc utiliser
 
 ### Eploiter avec les formats modifiers `%hn` et `%<size>x`
 

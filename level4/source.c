@@ -1,20 +1,21 @@
 #include <stdio.h>
 
-void	p(char *str) {
+int m = 0;  // 0x08049814
+
+void	p(char *str) {  // 0x08048444
 	printf(str);
 }
 
-void	n() {
-	// char *fgets(char *s, int size, FILE *stream);
-	char str[520];  // 0x208
-	fgets(str, 512, stdin);  // 0x200
-	p(str);
-	void	*m = 0x8049810;  // bss segment finish at 0x08049814
+void	n() {  // 0x08048457
+	char buf[520];  // ebp-0x208 | esp+0x10
+
+	fgets(buf, 512, stdin);  // 0x200
+	p(buf);
 	if (m == 0x1025544) {
-		system("/bin/cat /home/user/level5/.pass");
+	system("/bin/cat /home/user/level5/.pass");
 	}
 }
 
-void	main() {
+void	main() {  // 0x080484a7
 	n();
 }

